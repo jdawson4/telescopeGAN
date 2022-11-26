@@ -7,6 +7,7 @@
 seed = 3 # my lucky number!
 batch_size = 4 # unsure what my computer can handle haha
 num_channels = 3 # rgb!
+image_size = 400
 epochs = 100
 
 # custom hyperparameters--determine things about loss:
