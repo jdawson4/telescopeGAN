@@ -15,7 +15,7 @@ __pycache__/
 checkpoint_imgs/
 
 # we wanna upload this in the final version, but not yet:
-#junoGen/
+webbGen/
 # I believe we want to include this now!
 
 # ignore this, it's just vscode being weird

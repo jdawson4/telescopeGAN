@@ -47,7 +47,7 @@ def bottleneck(input, filters, size, stride=1, apply_dropout=False, apply_batchn
     return out
 
 def gen():
-    input = keras.layers.Input(shape=(None,None,1), dtype=tf.float16)
+    input = keras.layers.Input(shape=(None,None,num_channels), dtype=tf.float16)
     scale = keras.layers.Rescaling(1.0/255.0, offset=0)(input)
     d1 = downsample(scale, 8, 2, apply_batchnorm=False)#200
     d2 = downsample(d1, 16, 2)#100
@@ -72,9 +72,9 @@ def gen():
     u7 = upsample(u6, 8, 2)#200
     u7 = keras.layers.Concatenate()([u7,d1])
     out = upsample(u7, 8, 2)#400
-    out =  keras.layers.Concatenate()([out, scale])
     out = keras.layers.Conv2D(8,kernel_size=5,strides=1,padding='same',kernel_initializer=initializer,activation='tanh')(out)
     out = keras.layers.Conv2D(num_channels,kernel_size=1,strides=1,padding='same',kernel_initializer=initializer,activation='tanh')(out)
+    out =  keras.layers.Add()([out, scale])
     out = keras.layers.Rescaling(255.0)(out)
     out = keras.layers.Lambda(lambda x: tf.clip_by_value(x, 0.0, 255.0))(out)
     return keras.Model(inputs=input, outputs=out, name='generator')
