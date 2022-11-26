@@ -1,9 +1,10 @@
 # Author: Jacob Dawson
 # Make sure not to include the images--there are gigabytes of info in there!
 raw_data/
+example_data/
 official_images/
 fake_images/
-cookiecut_raw_images/
+cookiecut_raw_data/
 cookiecut_official_images/
 ckpts/
 
