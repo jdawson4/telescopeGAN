@@ -18,6 +18,7 @@ import imageio
 from constants import *
 
 onlyfiles = [f for f in listdir('raw_data') if isfile(join('raw_data', f))]
+imgCount=0
 for file in onlyfiles:
     with fits.open('raw_data/' + file) as hdul:
         data = hdul[1].data
@@ -32,7 +33,8 @@ for file in onlyfiles:
             for j in range(0, data.shape[1]-image_size, image_size):
                 cut_img = data[i:i+image_size, j:j+image_size]
                 if np.mean(cut_img) > 10:
-                    imageio.imwrite('cookiecut_raw_data/'+'r'+'_'+str(i)+'_'+str(j)+'.png', cut_img)
+                    imgCount+=1
+                    imageio.imwrite('cookiecut_raw_data/'+str(imgCount)+'_'+str(i)+'_'+str(j)+'.png', cut_img)
 
 """
 for imgName in listdir('official_images/'):
