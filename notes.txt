@@ -1,0 +1,8 @@
+Jacob: please note that I've put the following into the raw data folder:
+1. neptune
+2. jupiter
+3. ngc objects up to item number 54
+4. all "name" objects in the database
+5. all "southern ring nebula" objects
+
+This is as of Nov 26, 2022
