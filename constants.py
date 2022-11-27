@@ -5,7 +5,7 @@
 #
 # CONSTANTS
 seed = 3 # my lucky number!
-batch_size = 4 # higher obviously better. I'd recommend making the number of items in the trainset divisible by this. Otherwise... issues
+batch_size = 8 # higher obviously better. I'd recommend making the number of items in the trainset divisible by this. Otherwise... issues
 num_channels = 3 # rgb!
 image_size = 400
 epochs = 50
@@ -23,12 +23,12 @@ wgan_lambda = 1.0 # the weight we give to fooling the wgan
 #dis_learn_rate = 0.0004
 # 2.
 # this idea I've seen more frequently, the idea is to give the generator more ability to shift rapidly to outwit the discriminator
-#gen_learn_rate = 0.001
-#dis_learn_rate = 0.00001
+gen_learn_rate = 0.005
+dis_learn_rate = 0.0001
 # 3.
 # Very low for both
-gen_learn_rate = 0.001
-dis_learn_rate = 0.001
+#gen_learn_rate = 0.001
+#dis_learn_rate = 0.001
 
 # no idea what effect this has!
 momentum = 0.9 # default for adam is 0.9, default for RMSProp is 0.0
