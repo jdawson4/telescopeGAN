@@ -5,10 +5,10 @@
 #
 # CONSTANTS
 seed = 3 # my lucky number!
-batch_size = 4 # unsure what my computer can handle haha
+batch_size = 4 # higher obviously better. I'd recommend making the number of items in the trainset divisible by this. Otherwise... issues
 num_channels = 3 # rgb!
 image_size = 400
-epochs = 10
+epochs = 50
 
 # custom hyperparameters--determine things about loss:
 chi = 0.75 # how much we care about SSIM vs L1 when creating content loss
