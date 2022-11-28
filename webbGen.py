@@ -9,6 +9,16 @@ from os import listdir
 from os.path import isfile, join
 from constants import *
 
+def determine_padding(image):
+    downscalinglayers=16
+    i = image.shape[0]
+    j = image.shape[1]
+    while ((i % downscalinglayers) != 0):
+        i += 1
+    while ((j % downscalinglayers) != 0):
+        j += 1
+    return i, j
+
 trained_gen = tf.keras.models.load_model('webbGen')
 onlyfiles = [f for f in listdir('raw_data') if isfile(join('raw_data', f))]
 imgCount=0
@@ -23,6 +33,8 @@ for file in onlyfiles:
         data /= np.amax(data)
         data *= 255.0
         raw_img = tf.image.grayscale_to_rgb(tf.constant(data, shape=(len(data),len(data[1]),1)))
+        x,y = determine_padding(raw_img)
+        raw_img = tf.image.resize_with_crop_or_pad(raw_img, x, y)
         raw_imgs = tf.expand_dims(raw_img, axis=0)
         fake_images = trained_gen(raw_imgs)
         fake_images = tf.cast(fake_images, tf.float16)
