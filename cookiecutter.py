@@ -11,7 +11,6 @@
 
 from astropy.io import fits
 import numpy as np
-import matplotlib.pyplot as plt
 from os import listdir
 from os.path import isfile, join
 import imageio

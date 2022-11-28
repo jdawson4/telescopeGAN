@@ -6,13 +6,17 @@
 # testing-ground
 
 from astropy.io import fits
+import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 
-with fits.open('example_data/southern_ring.fits') as hdul:
+original = tf.constant([[[1.0], [2.0], [3.0]]])
+print(original.shape)
+
+with fits.open('example_data/raw_jupiter.fits') as hdul:
     # using "with open" works with astropy
 
-    hdul.info()
+    #hdul.info()
     data = hdul[1].data
     #print(np.amax(data)) # 47607.387
     #print(np.amin(data)) # -96.857056
@@ -25,5 +29,7 @@ with fits.open('example_data/southern_ring.fits') as hdul:
     #data = np.log(data)
     data /= np.amax(data)
     data *= 255.0
+    testData = tf.constant(data, shape=(len(data),len(data[1]),1))
+    print(testData.shape)
     imgplot = plt.imshow(data, cmap="gray")
     plt.show()
