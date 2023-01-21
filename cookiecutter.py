@@ -31,7 +31,7 @@ for file in onlyfiles:
         for i in range(0, data.shape[0]-image_size, image_size):
             for j in range(0, data.shape[1]-image_size, image_size):
                 cut_img = data[i:i+image_size, j:j+image_size]
-                if np.mean(cut_img) > 10:
+                if np.mean(cut_img) > 5:
                     imgCount+=1
                     imageio.imwrite('cookiecut_raw_data/'+str(imgCount)+'_'+str(i)+'_'+str(j)+'.png', cut_img)
 
