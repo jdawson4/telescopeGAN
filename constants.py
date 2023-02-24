@@ -8,7 +8,7 @@ seed = 3 # my lucky number!
 batch_size = 16 # higher obviously better. I'd recommend making the number of items in the trainset divisible by this. Otherwise... issues
 num_channels = 3 # rgb!
 image_size = 400
-epochs = 50
+epochs = 100
 
 # custom hyperparameters--determine things about loss:
 chi = 0.75 # how much we care about SSIM vs L1 when creating content loss
@@ -20,7 +20,7 @@ wgan_lambda = 1.0 # the weight we give to fooling the wgan
 # 1.
 # idea here comes from https://towardsdatascience.com/10-lessons-i-learned-training-generative-adversarial-networks-gans-for-a-year-c9071159628, called TTUR
 gen_learn_rate = 0.001
-dis_learn_rate = 0.004
+dis_learn_rate = 0.002
 # 2.
 # this idea I've seen more frequently, the idea is to give the generator more ability to shift rapidly to outwit the discriminator
 #gen_learn_rate = 0.0001
