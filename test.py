@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import os
 
 
-def processFile(path, filename):
+def processFile(path):
     with fits.open(path) as hdul:
         dataFound = False
         for i in range(2):
@@ -22,13 +22,26 @@ def processFile(path, filename):
             if len(h.data.shape) == 2:
                 dataFound = True
                 data = h.data
+                header = h.header
                 break
         if not dataFound:
             print("DATA NOT FOUND AT", path)
             return
+
+        # let's get the filter from the header:
+        print(header["FILTNAM1"])  # something like 'F284W', normally
+        # print(header['FILTNAM2'])
+        # print(header['FILTER1'])
+        # print(header['FILTER2'])
+        # print(header['PFILTER1'])
+        # print(header['PFILTER2'])
+
+        # get some basic facts about our data:
         # print(np.amax(data)) # 4154.5635
         # print(np.amin(data)) # -1340.3322
         # print(np.mean(data)) # 658.7233
+
+        # and do our processing:
         data = data.astype(np.float32)
         data = np.nan_to_num(data)
         data = np.clip(data, np.percentile(data, 20.0), np.percentile(data, 99.625))
@@ -51,6 +64,6 @@ for dirpath, dirnames, filenames in os.walk("example_data"):
         if filename.endswith(".fits"):
             list_of_files[filename] = os.sep.join([dirpath, filename])
 
-for k, v in list_of_files.items():
-    processFile(v, k)
+for _, v in list_of_files.items():
+    processFile(v)
     break
