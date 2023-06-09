@@ -180,7 +180,7 @@ class EveryKCallback(keras.callbacks.Callback):
             imageio.imwrite('checkpoint_imgs/'+str(epoch)+'raw.png', raw_image)
 
             self.model.save_weights("ckpts/ckpt"+str(epoch), overwrite=True, save_format='h5')
-            self.model.generator.save('webbGen',overwrite=True)
+            self.model.generator.save('telescopeGen',overwrite=True)
 
 both_datasets = tf.data.Dataset.zip((raw_imgs,official_images))
 cond_gan.fit(
@@ -194,5 +194,5 @@ cond_gan.fit(
 )
 
 cond_gan.save_weights("ckpts/finished", overwrite=True, save_format='h5')
-cond_gan.generator.save('webbGen',overwrite=True)
+cond_gan.generator.save('telescopeGen',overwrite=True)
 # for good measure, save again once we're done training

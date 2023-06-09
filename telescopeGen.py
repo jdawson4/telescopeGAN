@@ -19,7 +19,7 @@ def determine_padding(image):
         j += 1
     return i, j
 
-trained_gen = tf.keras.models.load_model('webbGen')
+trained_gen = tf.keras.models.load_model('telescopeGen')
 onlyfiles = [f for f in listdir('raw_data') if isfile(join('raw_data', f))]
 imgCount=0
 for file in onlyfiles:
