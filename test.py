@@ -15,26 +15,39 @@ import os
 def processFile(path):
     with fits.open(path) as hdul:
         dataFound = False
+        headerFound = False
         for i in range(2):
             h = hdul[i]
+            if h.header and not headerFound:
+                header = h.header
+                headerFound = True
             if h.data is None:
                 continue
             if len(h.data.shape) == 2:
                 dataFound = True
                 data = h.data
-                header = h.header
                 break
         if not dataFound:
             print("DATA NOT FOUND AT", path)
             return
 
+        # for k, v in header.items():
+        #    print(k)
+        # important finding: Webb images have the field "FILTER" in their
+        # header; Hubble has the field "FILTNAM1"
+
         # let's get the filter from the header:
-        print(header["FILTNAM1"])  # something like 'F284W', normally
-        # print(header['FILTNAM2'])
-        # print(header['FILTER1'])
-        # print(header['FILTER2'])
-        # print(header['PFILTER1'])
-        # print(header['PFILTER2'])
+        headerKeys = header.keys()
+        if "FILTER" in headerKeys:
+            # seems like this is a JWST img
+            print(header["FILTER"])
+        elif "FILTNAM1" in headerKeys:
+            # seems like this is a Hubble img
+            print(header["FILTNAM1"])
+        else:
+            # In this case, I was wrong--not sure what the filter is
+            print("COULD NOT FIND FILTER!")
+            return
 
         # get some basic facts about our data:
         # print(np.amax(data)) # 4154.5635
