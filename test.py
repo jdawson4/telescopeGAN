@@ -40,10 +40,12 @@ def processFile(path):
         headerKeys = header.keys()
         if "FILTER" in headerKeys:
             # seems like this is a JWST img
-            print(header["FILTER"])
+            filter = header["FILTER"]
+            # print(header["FILTER"])
         elif "FILTNAM1" in headerKeys:
             # seems like this is a Hubble img
-            print(header["FILTNAM1"])
+            filter = header["FILTNAM1"]
+            # print(header["FILTNAM1"])
         else:
             # In this case, I was wrong--not sure what the filter is
             print("COULD NOT FIND FILTER!")
@@ -66,17 +68,22 @@ def processFile(path):
         data *= 255.0
 
         testData = tf.constant(data, shape=(len(data), len(data[1]), 1))
-        print(testData.shape)
+        # print(testData.shape)
         # imgplot = plt.imshow(data, cmap="gray")
         # plt.show()
 
+        return filter
+
 
 list_of_files = {}
-for dirpath, dirnames, filenames in os.walk("example_data"):
+for dirpath, dirnames, filenames in os.walk("raw_data"):
     for filename in filenames:
         if filename.endswith(".fits"):
             list_of_files[filename] = os.sep.join([dirpath, filename])
 
+filters = []
 for _, v in list_of_files.items():
-    processFile(v)
-    break
+    filt = processFile(v)
+    if filt != None and filt not in filters:
+        filters.append(filt)
+print(filters)
