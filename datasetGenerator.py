@@ -15,6 +15,7 @@ import numpy as np
 import os
 import gc
 import random
+import imageio
 
 from constants import *
 
@@ -49,6 +50,7 @@ def stackImgs(imgs):
     gc.collect()
     return rawData
 
+
 def cookieCut(fullImg):
     # To cut down on processing, we'll "cookie cut" those down to a
     # reasonable size; this also removes the black space that many
@@ -63,9 +65,9 @@ def cookieCut(fullImg):
     return cookieCutImages
 
 
-def datasetGenerator(folder):
+def rawDatasetGenerator():
     list_of_files = {}
-    for dirpath, dirnames, filenames in os.walk(folder):
+    for dirpath, dirnames, filenames in os.walk(rawImgDir):
         for filename in filenames:
             if filename.endswith(".fits"):
                 list_of_files[filename] = os.sep.join([dirpath, filename])
@@ -125,7 +127,6 @@ def datasetGenerator(folder):
 
             if target == prevTarget:
                 imgs[filter] = data
-                gc.collect()
             else:
                 # we're going to process the previous target's data, then pass
                 # our new image into the dict.
@@ -135,11 +136,12 @@ def datasetGenerator(folder):
                 # that the model only receives images of the same size.
                 cookieCutImages = cookieCut(rawData)
                 for cookieCutImg in cookieCutImages:
-                    yield cookieCutImg # and finally we pass that img to the model!
+                    yield cookieCutImg  # and finally we pass that img to the model!
 
                 # next up: we add our data to the new list:
                 imgs = dict()
                 imgs[filter] = data
+            gc.collect()
 
     # we actually still have "one in the chamber" so to speak, so let's process
     # that one and we're done!
@@ -147,3 +149,16 @@ def datasetGenerator(folder):
     cookieCutImages = cookieCut(rawData)
     for cookieCutImg in cookieCutImages:
         yield cookieCutImg
+
+
+# now that all of that nasty business is over, we also want to make a dataset
+# generator for the "official" images, aka our "target" or "true data
+# distribution" that the generator will be aiming to mimic, and that the
+# discriminator will be hoping to positively identify.
+def officialDatasetGenerator():
+    for imgName in os.listdir(officialImgDir):
+        img = imageio.imread(officialImgDir + imgName, pilmode="RGB")
+        cookieCutImgs = cookieCut(img)
+        for cookieCutImg in cookieCutImgs:
+            yield cookieCutImg
+        gc.collect()

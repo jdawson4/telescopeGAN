@@ -10,6 +10,8 @@ num_channels = 3  # rgb!
 image_size = 400
 numLayers = 4
 epochs = 100
+rawImgDir = "raw_data/"
+officialImgDir = "official_images/"
 
 # custom hyperparameters--determine things about loss:
 chi = 0.75  # how much we care about SSIM vs L1 when creating content loss
