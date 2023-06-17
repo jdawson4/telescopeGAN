@@ -4,8 +4,6 @@ raw_data/
 example_data/
 official_images/
 fake_images/
-cookiecut_raw_data/
-cookiecut_official_images/
 ckpts/
 
 # we do not need pycache:

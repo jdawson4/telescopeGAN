@@ -8,6 +8,7 @@ seed = 3  # my lucky number!
 batch_size = 16  # higher obviously better. I'd recommend making the number of items in the trainset divisible by this. Otherwise... issues
 num_channels = 3  # rgb!
 image_size = 400
+numLayers = 4
 epochs = 100
 
 # custom hyperparameters--determine things about loss:

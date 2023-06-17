@@ -16,7 +16,7 @@ import os
 import gc
 import random
 
-numLayers = 4
+from constants import *
 
 
 def preprocessImg(data):
@@ -48,6 +48,19 @@ def stackImgs(imgs):
         rawData[:, :, layer] = imgs[f]
     gc.collect()
     return rawData
+
+def cookieCut(fullImg):
+    # To cut down on processing, we'll "cookie cut" those down to a
+    # reasonable size; this also removes the black space that many
+    # images have. This ensures that our model has a consistently
+    # filled, yet limited size of data for processing!
+    cookieCutImages = []
+    for i in range(0, fullImg.shape[0] - image_size, image_size):
+        for j in range(0, fullImg.shape[1] - image_size, image_size):
+            cut_img = fullImg[i : i + image_size, j : j + image_size, :]
+            if np.mean(cut_img) > 5:
+                cookieCutImages.append(cut_img)
+    return cookieCutImages
 
 
 def datasetGenerator(folder):
@@ -117,11 +130,20 @@ def datasetGenerator(folder):
                 # we're going to process the previous target's data, then pass
                 # our new image into the dict.
                 rawData = stackImgs(imgs)
-                yield rawData  # and finally we pass that img to the model!
+
+                # and then there's actually another step, we need to make sure
+                # that the model only receives images of the same size.
+                cookieCutImages = cookieCut(rawData)
+                for cookieCutImg in cookieCutImages:
+                    yield cookieCutImg # and finally we pass that img to the model!
 
                 # next up: we add our data to the new list:
                 imgs = dict()
                 imgs[filter] = data
 
+    # we actually still have "one in the chamber" so to speak, so let's process
+    # that one and we're done!
     rawData = stackImgs(imgs)
-    yield rawData  # and finally we pass that img to the model!
+    cookieCutImages = cookieCut(rawData)
+    for cookieCutImg in cookieCutImages:
+        yield cookieCutImg
