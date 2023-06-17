@@ -72,10 +72,10 @@ def datasetGenerator(folder):
                 if len(h.data.shape) == 2:
                     dataFound = True
                     data = h.data
-                    break
+                    continue
             if not dataFound:
                 print("DATA NOT FOUND AT", v)
-                break
+                continue
 
             # do our data processing here:
             data = preprocessImg(data)
@@ -93,14 +93,14 @@ def datasetGenerator(folder):
             else:
                 # In this case, I was wrong--not sure what the filter is
                 print("COULD NOT FIND FILTER!")
-                break
+                continue
 
             # let's also determine what we're looking at. Apparently targname
             # is standard across all telescopes (though I've only looked at
             # JWST and HST)
             if "TARGNAME" not in headerKeys:
                 print("COULD NOT FIND TARGET NAME!")
-                break
+                continue
             # assume we've found it from this point on:
             target = header["TARGNAME"]
 
