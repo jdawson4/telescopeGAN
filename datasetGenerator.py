@@ -30,6 +30,7 @@ def preprocessImg(data):
     data /= np.amax(data)
     data *= 255.0
     data = data.astype(np.uint8)
+    gc.collect()
     return data
 
 
@@ -45,6 +46,7 @@ def stackImgs(imgs):
     layer = 0
     for f in filtersToUse:
         rawData[:, :, layer] = imgs[f]
+    gc.collect()
     return rawData
 
 
@@ -120,7 +122,6 @@ def datasetGenerator(folder):
                 # next up: we add our data to the new list:
                 imgs = dict()
                 imgs[filter] = data
-                gc.collect()
 
     rawData = stackImgs(imgs)
     yield rawData  # and finally we pass that img to the model!
