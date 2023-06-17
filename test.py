@@ -68,7 +68,7 @@ def processFile(path):
         data *= 255.0
 
         testData = tf.constant(data, shape=(len(data), len(data[1]), 1))
-        # print(testData.shape)
+        print(testData.shape)
         # imgplot = plt.imshow(data, cmap="gray")
         # plt.show()
 
@@ -86,4 +86,5 @@ for _, v in list_of_files.items():
     filt = processFile(v)
     if filt != None and filt not in filters:
         filters.append(filt)
+    # break
 print(filters)

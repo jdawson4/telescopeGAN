@@ -13,6 +13,10 @@ from astropy.io import fits
 # import tensorflow as tf
 import numpy as np
 import os
+import gc
+import random
+
+numLayers = 4
 
 
 def preprocessImg(data):
@@ -25,7 +29,23 @@ def preprocessImg(data):
         data -= np.amin(data)
     data /= np.amax(data)
     data *= 255.0
+    data = data.astype(np.uint8)
     return data
+
+
+def stackImgs(imgs):
+    imgShape = imgs.values()[0].shape
+    imgShape = [imgShape[0], imgShape[1], numLayers]
+    rawData = np.zeros(imgShape)
+    filters = []
+    for k in imgs.keys():
+        filters.append(k)
+    # let's just chose n random filters from that list:
+    filtersToUse = random.choices(filters, k=numLayers)
+    layer = 0
+    for f in filtersToUse:
+        rawData[:, :, layer] = imgs[f]
+    return rawData
 
 
 def datasetGenerator(folder):
@@ -34,6 +54,9 @@ def datasetGenerator(folder):
         for filename in filenames:
             if filename.endswith(".fits"):
                 list_of_files[filename] = os.sep.join([dirpath, filename])
+
+    prevTarget = "none"
+    imgs = dict()
 
     for _, v in list_of_files.items():
         with fits.open(v) as hdul:
@@ -54,6 +77,9 @@ def datasetGenerator(folder):
                 print("DATA NOT FOUND AT", v)
                 break
 
+            # do our data processing here:
+            data = preprocessImg(data)
+
             telescope = ""
             headerKeys = header.keys()
             if "FILTER" in headerKeys:
@@ -68,3 +94,33 @@ def datasetGenerator(folder):
                 # In this case, I was wrong--not sure what the filter is
                 print("COULD NOT FIND FILTER!")
                 break
+
+            # let's also determine what we're looking at. Apparently targname
+            # is standard across all telescopes (though I've only looked at
+            # JWST and HST)
+            if "TARGNAME" not in headerKeys:
+                print("COULD NOT FIND TARGET NAME!")
+                break
+            # assume we've found it from this point on:
+            target = header["TARGNAME"]
+
+            # handle base case:
+            if prevTarget == "none":
+                prevTarget = target
+
+            if target == prevTarget:
+                imgs[filter] = data
+                gc.collect()
+            else:
+                # we're going to process the previous target's data, then pass
+                # our new image into the dict.
+                rawData = stackImgs(imgs)
+                yield rawData  # and finally we pass that img to the model!
+
+                # next up: we add our data to the new list:
+                imgs = dict()
+                imgs[filter] = data
+                gc.collect()
+
+    rawData = stackImgs(imgs)
+    yield rawData  # and finally we pass that img to the model!
