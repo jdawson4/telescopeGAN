@@ -10,7 +10,7 @@
 
 from astropy.io import fits
 
-# import tensorflow as tf
+import tensorflow as tf
 import numpy as np
 import os
 import gc
@@ -158,7 +158,32 @@ def rawDatasetGenerator():
 def officialDatasetGenerator():
     for imgName in os.listdir(officialImgDir):
         img = imageio.imread(officialImgDir + imgName, pilmode="RGB")
+        img = img.astype(np.uint8)  # should already be uint8, but make sure
         cookieCutImgs = cookieCut(img)
         for cookieCutImg in cookieCutImgs:
             yield cookieCutImg
         gc.collect()
+
+
+# ok I'm a bit confused about how datasets work in keras. Some experimenting:
+if __name__ == "__main__":
+    # need to define the signature that all data items returned will be in:
+    rawReturnSig = tf.TensorSpec(shape=(None, None, numLayers), dtype=tf.uint8)
+    officialReturnSig = tf.TensorSpec(shape=(None, None, 3), dtype=tf.uint8)
+
+    # first let's figure out how the cardinality of this one works:
+    rawDataset = tf.data.Dataset.from_generator(
+        lambda: rawDatasetGenerator(),
+        output_signature=(rawReturnSig),
+    )
+    print(f"cardinality of raw: {rawDataset.cardinality()}")
+
+    # next work out the cardinality of the second dataset
+    officialDataset = tf.data.Dataset.from_generator(
+        lambda: officialDatasetGenerator(),
+        output_signature=(officialReturnSig),
+    )
+    print(f"cardinality of official: {officialDataset.cardinality()}")
+
+    # we also need to zip these together for the model:
+    # datasets = tf.data.Dataset.zip((rawDataset, officialDataset))
