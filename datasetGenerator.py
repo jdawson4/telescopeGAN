@@ -36,7 +36,9 @@ def preprocessImg(data):
 
 
 def stackImgs(imgs):
-    imgShape = imgs.values()[0].shape
+    for _, v in imgs.items():
+        imgShape = v.shape
+        break
     imgShape = [imgShape[0], imgShape[1], numLayers]
     rawData = np.zeros(imgShape)
     filters = []
@@ -145,10 +147,10 @@ def rawDatasetGenerator():
 
     # we actually still have "one in the chamber" so to speak, so let's process
     # that one and we're done!
-    rawData = stackImgs(imgs)
-    cookieCutImages = cookieCut(rawData)
-    for cookieCutImg in cookieCutImages:
-        yield cookieCutImg
+    # rawData = stackImgs(imgs)
+    # cookieCutImages = cookieCut(rawData)
+    # for cookieCutImg in cookieCutImages:
+    #    yield cookieCutImg
 
 
 # now that all of that nasty business is over, we also want to make a dataset
@@ -165,6 +167,16 @@ def officialDatasetGenerator():
         gc.collect()
 
 
+def determineCardinality(dataset):
+    simpleCardinality = dataset.cardinality()
+    if simpleCardinality > 0:
+        return simpleCardinality
+    i = 0
+    for _ in dataset.as_numpy_iterator():
+        i += 1
+    return i
+
+
 # ok I'm a bit confused about how datasets work in keras. Some experimenting:
 if __name__ == "__main__":
     # need to define the signature that all data items returned will be in:
@@ -176,14 +188,14 @@ if __name__ == "__main__":
         lambda: rawDatasetGenerator(),
         output_signature=(rawReturnSig),
     )
-    print(f"cardinality of raw: {rawDataset.cardinality()}")
+    print(f"cardinality of raw: {determineCardinality(rawDataset)}")
 
     # next work out the cardinality of the second dataset
     officialDataset = tf.data.Dataset.from_generator(
         lambda: officialDatasetGenerator(),
         output_signature=(officialReturnSig),
     )
-    print(f"cardinality of official: {officialDataset.cardinality()}")
+    print(f"cardinality of raw: {determineCardinality(officialDataset)}")
 
     # we also need to zip these together for the model:
     # datasets = tf.data.Dataset.zip((rawDataset, officialDataset))
