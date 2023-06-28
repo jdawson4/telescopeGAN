@@ -189,6 +189,7 @@ if __name__ == "__main__":
         output_signature=(rawReturnSig),
     )
     print(f"cardinality of raw: {determineCardinality(rawDataset)}")
+    # printing 993!
 
     # next work out the cardinality of the second dataset
     officialDataset = tf.data.Dataset.from_generator(
@@ -196,6 +197,7 @@ if __name__ == "__main__":
         output_signature=(officialReturnSig),
     )
     print(f"cardinality of official: {determineCardinality(officialDataset)}")
+    # printing 5272
 
     # we also need to zip these together for the model:
-    # datasets = tf.data.Dataset.zip((rawDataset, officialDataset))
+    datasets = tf.data.Dataset.zip((rawDataset, officialDataset))
