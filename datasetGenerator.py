@@ -100,7 +100,7 @@ def rawDatasetGenerator():
             data = preprocessImg(data)
 
             telescope = ""
-            headerKeys = header.keys()
+            headerKeys = list(header.keys())
             if "FILTER" in headerKeys:
                 # seems like this is a JWST img
                 telescope = "JWST"
@@ -195,7 +195,7 @@ if __name__ == "__main__":
         lambda: officialDatasetGenerator(),
         output_signature=(officialReturnSig),
     )
-    print(f"cardinality of raw: {determineCardinality(officialDataset)}")
+    print(f"cardinality of official: {determineCardinality(officialDataset)}")
 
     # we also need to zip these together for the model:
     # datasets = tf.data.Dataset.zip((rawDataset, officialDataset))
