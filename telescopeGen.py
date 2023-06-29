@@ -27,7 +27,9 @@ imgCount = 0
 for file in onlyfiles:
     with fits.open("raw_data/" + file) as hdul:
         data = hdul[1].data
-        data = np.clip(data, np.percentile(data, 20.0), np.percentile(data, 99.625))
+        data = np.clip(
+            data, np.percentile(data, 20.0), np.percentile(data, 99.625)
+        )
         if np.amin(data) < 0.0:
             data += np.amin(data)
         if np.amin(data) > 0.0:

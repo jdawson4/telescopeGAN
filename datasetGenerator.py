@@ -41,14 +41,14 @@ def stackImgs(imgs):
         break
     imgShape = [imgShape[0], imgShape[1], numLayers]
     rawData = np.zeros(imgShape)
-    blackSingleLayer = rawData[:,:,0]
+    blackSingleLayer = rawData[:, :, 0]
     filters = []
     for k in imgs.keys():
         filters.append(k)
     # let's just chose n random filters from that list:
-    if (len(filters) == 0):
+    if len(filters) == 0:
         raise Exception("ERROR: No data to stack!")
-    while (len(filters) < numLayers):
+    while len(filters) < numLayers:
         # in case we don't have enough images, pad with black tiles:
         filters.append(blackSingleLayer)
     filtersToUse = random.sample(filters, k=numLayers)
@@ -182,6 +182,7 @@ def determineCardinality(dataset):
         i += 1
     return i
 
+
 # might seem messy, but we need to do some processing, and set some constants.
 # if this file is main, then we're just testing, so print out the cardinality.
 # Otherwise, we want to make sure that the file using these functions has the
@@ -194,22 +195,28 @@ officialReturnSig = tf.TensorSpec(shape=(None, None, 3), dtype=tf.uint8)
 
 # next, make the datasets and determine the cardinalities:
 rawDataset = tf.data.Dataset.from_generator(
-        lambda: rawDatasetGenerator(),
-        output_signature=(rawReturnSig),
-    )
+    lambda: rawDatasetGenerator(),
+    output_signature=(rawReturnSig),
+)
 rawCardinality = determineCardinality(rawDataset)
 officialDataset = tf.data.Dataset.from_generator(
-        lambda: officialDatasetGenerator(),
-        output_signature=(officialReturnSig),
-    )
+    lambda: officialDatasetGenerator(),
+    output_signature=(officialReturnSig),
+)
 officialCardinality = determineCardinality(officialDataset)
 datasets = tf.data.Dataset.zip((rawDataset, officialDataset))
 # the combined cardinality is just the smaller of the two cardinalities
-#combinedCardinality = determineCardinality(datasets) # not necessary
-combinedCardinality = rawCardinality if rawCardinality < officialCardinality else officialCardinality
+# combinedCardinality = determineCardinality(datasets) # not necessary
+combinedCardinality = (
+    rawCardinality
+    if rawCardinality < officialCardinality
+    else officialCardinality
+)
 
 if __name__ == "__main__":
     # if this is being run for testing, just print out thoe cardinalities:
-    print(f"cardinality of raw: {rawCardinality}") # printing 993!
-    print(f"cardinality of official: {officialCardinality}") # printing 5272
-    print(f"cardinality of combined dataset: {combinedCardinality}") # printing 993
+    print(f"cardinality of raw: {rawCardinality}")  # printing 993!
+    print(f"cardinality of official: {officialCardinality}")  # printing 5272
+    print(
+        f"cardinality of combined dataset: {combinedCardinality}"
+    )  # printing 993

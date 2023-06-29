@@ -7,7 +7,7 @@
 seed = 3  # my lucky number!
 batch_size = 16  # higher obviously better. I'd recommend making the number of items in the trainset divisible by this. Otherwise... issues
 image_size = 400
-numLayers = 4 # the number of greyscale inputs to include
+numLayers = 4  # the number of greyscale inputs to include
 epochs = 100
 rawImgDir = "raw_data/"
 officialImgDir = "official_images/"

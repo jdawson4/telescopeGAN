@@ -16,7 +16,7 @@ import imageio
 # our imports:
 from constants import *
 from architecture import *
-from datasetGenerator import * # also imports the datasets themselves
+from datasetGenerator import *  # also imports the datasets themselves
 
 physical_devices = tf.config.experimental.list_physical_devices("GPU")
 num_gpus = len(physical_devices)
@@ -59,7 +59,9 @@ def content_loss(fake, real):
     f = tf.cast(fake, tf.float32)
     r = tf.cast(real, tf.float32)
     ssim = chi * (1.0 - tf.experimental.numpy.mean(tf.image.ssim(f, r, 1.0)))
-    l1 = (1.0 - chi) * tf.norm((f / (batch_size * 255.0)) - (r / (batch_size * 255.0)))
+    l1 = (1.0 - chi) * tf.norm(
+        (f / (batch_size * 255.0)) - (r / (batch_size * 255.0))
+    )
     return tf.cast(ssim, tf.float16) + tf.cast(l1, tf.float16)
 
 
@@ -76,7 +78,9 @@ class ConditionalGAN(keras.Model):
     def metrics(self):
         return [self.gen_loss_tracker, self.dis_loss_tracker]
 
-    def compile(self, d_optimizer, g_optimizer, d_loss_fn, g_loss_fn, run_eagerly):
+    def compile(
+        self, d_optimizer, g_optimizer, d_loss_fn, g_loss_fn, run_eagerly
+    ):
         super(ConditionalGAN, self).compile(run_eagerly=run_eagerly)
         self.d_optimizer = d_optimizer
         self.g_optimizer = g_optimizer
@@ -98,17 +102,22 @@ class ConditionalGAN(keras.Model):
             disc_real_output = discriminator(user_img_batch, training=True)
             disc_generated_output = discriminator(gen_output, training=True)
             wganLoss = -self.g_loss_fn(fake_image_labels, disc_generated_output)
-            wganLoss = tf.convert_to_tensor(wgan_lambda, dtype=tf.float16) * wganLoss
+            wganLoss = (
+                tf.convert_to_tensor(wgan_lambda, dtype=tf.float16) * wganLoss
+            )
             contentLoss = content_loss(gen_output, raw_img_batch)
             contentLoss = (
-                tf.convert_to_tensor(content_lambda, dtype=tf.float16) * contentLoss
+                tf.convert_to_tensor(content_lambda, dtype=tf.float16)
+                * contentLoss
             )
             total_g_loss = wganLoss + contentLoss
             d_loss = self.d_loss_fn(
                 fake_image_labels, disc_generated_output
             ) - self.d_loss_fn(true_image_labels, disc_real_output)
         grads = gtape.gradient(total_g_loss, self.generator.trainable_weights)
-        self.g_optimizer.apply_gradients(zip(grads, self.generator.trainable_weights))
+        self.g_optimizer.apply_gradients(
+            zip(grads, self.generator.trainable_weights)
+        )
         self.gen_loss_tracker.update_state(total_g_loss)
 
         grads = dtape.gradient(d_loss, self.discriminator.trainable_weights)
@@ -136,8 +145,12 @@ def wasserstein_loss(y_true, y_pred):
 cond_gan.compile(
     # d_optimizer = tf.keras.optimizers.RMSprop(learning_rate = dis_learn_rate),
     # g_optimizer = tf.keras.optimizers.RMSprop(learning_rate = gen_learn_rate),
-    d_optimizer=tf.keras.optimizers.Adam(learning_rate=dis_learn_rate, beta_1=momentum),
-    g_optimizer=tf.keras.optimizers.Adam(learning_rate=gen_learn_rate, beta_1=momentum),
+    d_optimizer=tf.keras.optimizers.Adam(
+        learning_rate=dis_learn_rate, beta_1=momentum
+    ),
+    g_optimizer=tf.keras.optimizers.Adam(
+        learning_rate=gen_learn_rate, beta_1=momentum
+    ),
     d_loss_fn=wasserstein_loss,
     g_loss_fn=wasserstein_loss,
     run_eagerly=True,
@@ -164,8 +177,12 @@ class EveryKCallback(keras.callbacks.Callback):
             )[0]
             raw_image = raw_image.numpy().astype(np.uint8)
             fake_image = fake_image.numpy().astype(np.uint8)
-            imageio.imwrite("checkpoint_imgs/" + str(epoch) + ".png", fake_image)
-            imageio.imwrite("checkpoint_imgs/" + str(epoch) + "raw.png", raw_image)
+            imageio.imwrite(
+                "checkpoint_imgs/" + str(epoch) + ".png", fake_image
+            )
+            imageio.imwrite(
+                "checkpoint_imgs/" + str(epoch) + "raw.png", raw_image
+            )
 
             self.model.save_weights(
                 "ckpts/ckpt" + str(epoch), overwrite=True, save_format="h5"

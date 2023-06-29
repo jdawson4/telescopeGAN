@@ -143,7 +143,9 @@ def disc_block(input, filters, size, stride, apply_batchnorm=True):
 def dis():
     input = keras.layers.Input(shape=(None, None, numLayers), dtype=tf.float16)
     scale = keras.layers.Rescaling(1.0 / 127.5, offset=-1)(input)
-    out = disc_block(scale, 4, 5, 1, apply_batchnorm=False)  # should detect artifacts?
+    out = disc_block(
+        scale, 4, 5, 1, apply_batchnorm=False
+    )  # should detect artifacts?
     out = disc_block(out, 8, 2, 2, apply_batchnorm=False)
     out = disc_block(out, 16, 2, 2)
     out = disc_block(out, 32, 2, 2)
