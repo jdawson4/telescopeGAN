@@ -11,9 +11,12 @@ import os
 import tensorflow as tf
 from tensorflow import keras
 import numpy as np
+import imageio
+
+# our imports:
 from constants import *
 from architecture import *
-import imageio
+from datasetGenerator import * # also imports the datasets themselves
 
 physical_devices = tf.config.experimental.list_physical_devices("GPU")
 num_gpus = len(physical_devices)
@@ -24,31 +27,6 @@ tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 keras.mixed_precision.set_global_policy("mixed_float16")
 tf.random.set_seed(seed)
-
-raw_imgs = keras.utils.image_dataset_from_directory(
-    "cookiecut_raw_data/",
-    labels=None,
-    color_mode="rgb",
-    batch_size=batch_size,
-    image_size=(image_size, image_size),
-    shuffle=True,
-    interpolation="bilinear",
-    seed=seed,
-)
-official_images = keras.utils.image_dataset_from_directory(
-    "cookiecut_official_images/",
-    labels=None,
-    color_mode="rgb",
-    batch_size=batch_size,
-    image_size=(image_size, image_size),
-    shuffle=True,
-    interpolation="bilinear",
-    crop_to_aspect_ratio=True,
-    seed=seed,
-)
-# and combine the cookiecut images with the cropped/zoomed ones:
-raw_imgs = raw_imgs.shuffle(100, seed=seed)
-official_images = official_images.shuffle(100, seed=seed)
 
 # these are declared in architecture.py
 generator = gen()
@@ -63,11 +41,7 @@ print("Architecture:\n")
 print("\n")
 print("\n")
 print("Image size:", image_size)
-print("Approx. raw imgs dataset size:", batch_size * raw_imgs.cardinality().numpy())
-print(
-    "Approx. user imgs dataset size:",
-    batch_size * official_images.cardinality().numpy(),
-)
+print("Dataset size:", combinedCardinality)
 print("Batch size:", batch_size)
 print("Weight of content loss:", content_lambda)
 print("Weight of WGAN loss:", wgan_lambda)
@@ -199,14 +173,13 @@ class EveryKCallback(keras.callbacks.Callback):
             self.model.generator.save("telescopeGen", overwrite=True)
 
 
-both_datasets = tf.data.Dataset.zip((raw_imgs, official_images))
 cond_gan.fit(
-    both_datasets,
+    datasets,
     # data is already batched!
     epochs=epochs,
     verbose=1,
     callbacks=[
-        EveryKCallback(both_datasets, epoch_interval=2)
+        EveryKCallback(datasets, epoch_interval=5)
     ],  # custom callbacks here!
     # validation doesnt really apply here?
     shuffle=False,  # shuffling done via dataset api

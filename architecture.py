@@ -78,7 +78,7 @@ def bottleneck(
 
 
 def gen():
-    input = keras.layers.Input(shape=(None, None, num_channels), dtype=tf.float16)
+    input = keras.layers.Input(shape=(None, None, numLayers), dtype=tf.float16)
     scale = keras.layers.Rescaling(1.0 / 255.0, offset=0)(input)
     d1 = downsample(scale, 8, 2, apply_batchnorm=False)  # 200
     d2 = downsample(d1, 16, 2)  # 100
@@ -112,7 +112,7 @@ def gen():
         activation="tanh",
     )(out)
     out = keras.layers.Conv2D(
-        num_channels,
+        numLayers,
         kernel_size=1,
         strides=1,
         padding="same",
@@ -141,7 +141,7 @@ def disc_block(input, filters, size, stride, apply_batchnorm=True):
 
 
 def dis():
-    input = keras.layers.Input(shape=(None, None, num_channels), dtype=tf.float16)
+    input = keras.layers.Input(shape=(None, None, numLayers), dtype=tf.float16)
     scale = keras.layers.Rescaling(1.0 / 127.5, offset=-1)(input)
     out = disc_block(scale, 4, 5, 1, apply_batchnorm=False)  # should detect artifacts?
     out = disc_block(out, 8, 2, 2, apply_batchnorm=False)

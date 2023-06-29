@@ -41,11 +41,17 @@ def stackImgs(imgs):
         break
     imgShape = [imgShape[0], imgShape[1], numLayers]
     rawData = np.zeros(imgShape)
+    blackSingleLayer = rawData[:,:,0]
     filters = []
     for k in imgs.keys():
         filters.append(k)
     # let's just chose n random filters from that list:
-    filtersToUse = random.choices(filters, k=numLayers)
+    if (len(filters) == 0):
+        raise Exception("ERROR: No data to stack!")
+    while (len(filters) < numLayers):
+        # in case we don't have enough images, pad with black tiles:
+        filters.append(blackSingleLayer)
+    filtersToUse = random.sample(filters, k=numLayers)
     layer = 0
     for f in filtersToUse:
         rawData[:, :, layer] = imgs[f]
@@ -176,28 +182,34 @@ def determineCardinality(dataset):
         i += 1
     return i
 
+# might seem messy, but we need to do some processing, and set some constants.
+# if this file is main, then we're just testing, so print out the cardinality.
+# Otherwise, we want to make sure that the file using these functions has the
+# cardinalities, so calculate them anyway. In any case, we need to run the
+# above dataset generator functions; all that changes is whether we're printing
 
-# ok I'm a bit confused about how datasets work in keras. Some experimenting:
-if __name__ == "__main__":
-    # need to define the signature that all data items returned will be in:
-    rawReturnSig = tf.TensorSpec(shape=(None, None, numLayers), dtype=tf.uint8)
-    officialReturnSig = tf.TensorSpec(shape=(None, None, 3), dtype=tf.uint8)
+# first, need to define the signature that all data items returned will be in:
+rawReturnSig = tf.TensorSpec(shape=(None, None, numLayers), dtype=tf.uint8)
+officialReturnSig = tf.TensorSpec(shape=(None, None, 3), dtype=tf.uint8)
 
-    # first let's figure out how the cardinality of this one works:
-    rawDataset = tf.data.Dataset.from_generator(
+# next, make the datasets and determine the cardinalities:
+rawDataset = tf.data.Dataset.from_generator(
         lambda: rawDatasetGenerator(),
         output_signature=(rawReturnSig),
     )
-    print(f"cardinality of raw: {determineCardinality(rawDataset)}")
-    # printing 993!
-
-    # next work out the cardinality of the second dataset
-    officialDataset = tf.data.Dataset.from_generator(
+rawCardinality = determineCardinality(rawDataset)
+officialDataset = tf.data.Dataset.from_generator(
         lambda: officialDatasetGenerator(),
         output_signature=(officialReturnSig),
     )
-    print(f"cardinality of official: {determineCardinality(officialDataset)}")
-    # printing 5272
+officialCardinality = determineCardinality(officialDataset)
+datasets = tf.data.Dataset.zip((rawDataset, officialDataset))
+# the combined cardinality is just the smaller of the two cardinalities
+#combinedCardinality = determineCardinality(datasets) # not necessary
+combinedCardinality = rawCardinality if rawCardinality < officialCardinality else officialCardinality
 
-    # we also need to zip these together for the model:
-    datasets = tf.data.Dataset.zip((rawDataset, officialDataset))
+if __name__ == "__main__":
+    # if this is being run for testing, just print out thoe cardinalities:
+    print(f"cardinality of raw: {rawCardinality}") # printing 993!
+    print(f"cardinality of official: {officialCardinality}") # printing 5272
+    print(f"cardinality of combined dataset: {combinedCardinality}") # printing 993
