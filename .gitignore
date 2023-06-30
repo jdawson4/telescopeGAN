@@ -4,13 +4,11 @@ raw_data/
 example_data/
 official_images/
 fake_images/
+checkpoint_images/
 ckpts/
 
 # we do not need pycache:
 __pycache__/
-
-# we definitely don't need checkpoint images:
-checkpoint_imgs/
 
 # we wanna upload this in the final version, but not yet:
 telescopeGen/

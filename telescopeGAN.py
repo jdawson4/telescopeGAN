@@ -178,10 +178,10 @@ class EveryKCallback(keras.callbacks.Callback):
             raw_image = raw_image.numpy().astype(np.uint8)
             fake_image = fake_image.numpy().astype(np.uint8)
             imageio.imwrite(
-                "checkpoint_imgs/" + str(epoch) + ".png", fake_image
+                checkPointImageDir + str(epoch) + ".png", fake_image
             )
             imageio.imwrite(
-                "checkpoint_imgs/" + str(epoch) + "raw.png", raw_image
+                checkPointImageDir + str(epoch) + "raw.png", raw_image
             )
 
             self.model.save_weights(

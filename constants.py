@@ -11,6 +11,8 @@ numLayers = 4  # the number of greyscale inputs to include
 epochs = 100
 rawImgDir = "raw_data/"
 officialImgDir = "official_images/"
+fakeImageDir = "fake_images/"
+checkPointImageDir = "checkpoint_images/"
 
 # custom hyperparameters--determine things about loss:
 chi = 0.75  # how much we care about SSIM vs L1 when creating content loss
