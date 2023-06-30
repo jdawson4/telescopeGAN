@@ -216,7 +216,11 @@ combinedCardinality = (
 # finally, we apply some behaviors, like asserting the cardinality, batching,
 # and prefetching, for smoother training.
 # I don't think we're allowed to shuffle, unfortunately
-datasets = datasets.apply(tf.data.experimental.assert_cardinality(combinedCardinality)).batch(batch_size).prefetch(batch_size * 4)
+datasets = (
+    datasets.apply(tf.data.experimental.assert_cardinality(combinedCardinality))
+    .batch(batch_size)
+    .prefetch(batch_size * 4)
+)
 
 if __name__ == "__main__":
     # if this is being run for testing, just print out thoe cardinalities:

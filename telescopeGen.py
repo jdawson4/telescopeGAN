@@ -25,12 +25,8 @@ def determine_padding(image):
 trained_gen = tf.keras.models.load_model("telescopeGen")
 imgCount = 0
 for rawImg in rawDataset.as_numpy_iterator():
-    imgCount+=1
+    imgCount += 1
     raw_image = tf.convert_to_tensor(rawImg, dtype=tf.float32)
-    fake_image = trained_gen(
-        tf.expand_dims(raw_image, 0), training=False
-    )[0]
+    fake_image = trained_gen(tf.expand_dims(raw_image, 0), training=False)[0]
     fake_image = fake_image.numpy().astype(np.uint8)
-    imageio.imwrite(
-        fakeImageDir + str(imgCount) + ".png", fake_image
-    )
+    imageio.imwrite(fakeImageDir + str(imgCount) + ".png", fake_image)
