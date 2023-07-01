@@ -36,6 +36,10 @@ def preprocessImg(data):
 
 
 def stackImgs(imgs):
+    # TODO: fix this function to stop using random. Because of our use of
+    # random, we are getting cardinality issues, the dumbest issues to
+    # get when working with data, because this is the dumbest way to pad
+    # our data. Ugh.
     for _, v in imgs.items():
         imgShape = v.shape
         break
