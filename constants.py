@@ -5,7 +5,7 @@
 #
 # CONSTANTS
 seed = 3  # my lucky number!
-batch_size = 16  # higher obviously better. I'd recommend making the number of items in the trainset divisible by this. Otherwise... issues
+batch_size = 16  # higher obviously better
 image_size = 400
 numLayers = 4  # the number of greyscale inputs to include
 numLayersRGB = 3  # three layers, for RGB images
@@ -23,11 +23,14 @@ wgan_lambda = 1.0  # the weight we give to fooling the wgan
 
 # learning rates: a few different strategies:
 # 1.
-# idea here comes from https://towardsdatascience.com/10-lessons-i-learned-training-generative-adversarial-networks-gans-for-a-year-c9071159628, called TTUR
+# idea here comes from
+# https://towardsdatascience.com/10-lessons-i-learned-training-generative-adversarial-networks-gans-for-a-year-c9071159628,
+# called TTUR
 gen_learn_rate = 0.001
 dis_learn_rate = 0.002
 # 2.
-# this idea I've seen more frequently, the idea is to give the generator more ability to shift rapidly to outwit the discriminator
+# this idea I've seen more frequently, the idea is to give the generator more
+# ability to shift rapidly to outwit the discriminator
 # gen_learn_rate = 0.0001
 # dis_learn_rate = 0.00001
 # 3.

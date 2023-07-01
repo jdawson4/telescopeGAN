@@ -34,28 +34,46 @@ def preprocessImg(data):
     gc.collect()
     return data
 
+def selectNEvenlySpaced(n, arr):
+    # this looks ugly but it covers edge cases
+    # given an integer n and an array, select n items from the array, evenly
+    # spaced as possible
+    if n<=1:
+        return arr[0:1]
+    if n>=len(arr):
+        return arr
+    stepsize = len(arr) // (n-1)
+    retArr = []
+    for i in range(0, len(arr), stepsize):
+        if len(retArr)==n:
+            break
+        retArr.append(arr[i])
+    if len(retArr) < n:
+        retArr.append(arr[-1])
+    return retArr
 
 def stackImgs(imgs):
-    # TODO: fix this function to stop using random. Because of our use of
-    # random, we are getting cardinality issues, the dumbest issues to
-    # get when working with data, because this is the dumbest way to pad
-    # our data. Ugh.
+    # initialize return object:
     for _, v in imgs.items():
         imgShape = v.shape
         break
     imgShape = [imgShape[0], imgShape[1], numLayers]
     rawData = np.zeros(imgShape)
     blackSingleLayer = rawData[:, :, 0]
+
+    # determine what filters to use:
     filters = []
     for k in imgs.keys():
         filters.append(k)
-    # let's just chose n random filters from that list:
+    filters = sorted(filters)
     if len(filters) == 0:
         raise Exception("ERROR: No data to stack!")
     while len(filters) < numLayers:
         # in case we don't have enough images, pad with black tiles:
         filters.append("blackSingleLayer")
-    filtersToUse = random.sample(filters, k=numLayers)
+    filtersToUse = selectNEvenlySpaced(numLayers, filters)
+
+    # layer and return:
     layer = 0
     imgs["blackSingleLayer"] = blackSingleLayer
     for f in filtersToUse:
@@ -125,6 +143,10 @@ def rawDatasetGenerator():
                 # In this case, I was wrong--not sure what the filter is
                 print("COULD NOT FIND FILTER!")
                 continue
+            # we actually want the filter to store the wavelength, rather
+            # than filter name. Luckily, we can convert easily with an object
+            # defined in constants.py:
+            filter = filterDict[filter]
 
             # let's also determine what we're looking at. Apparently targname
             # is standard across all telescopes (though I've only looked at
