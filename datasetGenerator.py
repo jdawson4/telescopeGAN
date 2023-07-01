@@ -34,23 +34,25 @@ def preprocessImg(data):
     gc.collect()
     return data
 
+
 def selectNEvenlySpaced(n, arr):
     # this looks ugly but it covers edge cases
     # given an integer n and an array, select n items from the array, evenly
     # spaced as possible
-    if n<=1:
+    if n <= 1:
         return arr[0:1]
-    if n>=len(arr):
+    if n >= len(arr):
         return arr
-    stepsize = len(arr) // (n-1)
+    stepsize = len(arr) // (n - 1)
     retArr = []
     for i in range(0, len(arr), stepsize):
-        if len(retArr)==n:
+        if len(retArr) == n:
             break
         retArr.append(arr[i])
     if len(retArr) < n:
         retArr.append(arr[-1])
     return retArr
+
 
 def stackImgs(imgs):
     # initialize return object:
