@@ -20,8 +20,8 @@ from datasetGenerator import *  # also imports the datasets themselves
 
 physical_devices = tf.config.experimental.list_physical_devices("GPU")
 num_gpus = len(physical_devices)
-if len(physical_devices) > 0:
-    tf.config.experimental.set_memory_growth(physical_devices[0], True)
+# if len(physical_devices) > 0:
+#    tf.config.experimental.set_memory_growth(physical_devices[0], True)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
@@ -105,7 +105,19 @@ class ConditionalGAN(keras.Model):
             wganLoss = (
                 tf.convert_to_tensor(wgan_lambda, dtype=tf.float16) * wganLoss
             )
-            contentLoss = content_loss(gen_output, raw_img_batch)
+            contentLoss = content_loss(
+                tf.concat(
+                    (
+                        gen_output,
+                        tf.zeros(
+                            (batch_size, image_size, image_size, 1),
+                            dtype=tf.float16,
+                        ),
+                    ),
+                    axis=3,
+                ),
+                raw_img_batch,
+            )
             contentLoss = (
                 tf.convert_to_tensor(content_lambda, dtype=tf.float16)
                 * contentLoss

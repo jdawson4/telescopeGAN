@@ -111,15 +111,15 @@ def gen():
         kernel_initializer=initializer,
         activation="tanh",
     )(out)
+    out = keras.layers.Concatenate()([out, scale])
     out = keras.layers.Conv2D(
-        numLayers,
+        numLayersRGB,
         kernel_size=1,
         strides=1,
         padding="same",
         kernel_initializer=initializer,
         activation="tanh",
     )(out)
-    out = keras.layers.Add()([out, scale])
     out = keras.layers.Rescaling(255.0)(out)
     out = keras.layers.Lambda(lambda x: tf.clip_by_value(x, 0.0, 255.0))(out)
     return keras.Model(inputs=input, outputs=out, name="generator")
@@ -141,7 +141,9 @@ def disc_block(input, filters, size, stride, apply_batchnorm=True):
 
 
 def dis():
-    input = keras.layers.Input(shape=(None, None, numLayers), dtype=tf.float16)
+    input = keras.layers.Input(
+        shape=(None, None, numLayersRGB), dtype=tf.float16
+    )
     scale = keras.layers.Rescaling(1.0 / 127.5, offset=-1)(input)
     out = disc_block(
         scale, 4, 5, 1, apply_batchnorm=False

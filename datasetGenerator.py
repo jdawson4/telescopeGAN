@@ -50,11 +50,13 @@ def stackImgs(imgs):
         raise Exception("ERROR: No data to stack!")
     while len(filters) < numLayers:
         # in case we don't have enough images, pad with black tiles:
-        filters.append(blackSingleLayer)
+        filters.append("blackSingleLayer")
     filtersToUse = random.sample(filters, k=numLayers)
     layer = 0
+    imgs["blackSingleLayer"] = blackSingleLayer
     for f in filtersToUse:
         rawData[:, :, layer] = imgs[f]
+        layer += 1
     gc.collect()
     return rawData
 
@@ -191,7 +193,9 @@ def determineCardinality(dataset):
 
 # first, need to define the signature that all data items returned will be in:
 rawReturnSig = tf.TensorSpec(shape=(None, None, numLayers), dtype=tf.uint8)
-officialReturnSig = tf.TensorSpec(shape=(None, None, 3), dtype=tf.uint8)
+officialReturnSig = tf.TensorSpec(
+    shape=(None, None, numLayersRGB), dtype=tf.uint8
+)
 
 # next, make the datasets and determine the cardinalities:
 rawDataset = tf.data.Dataset.from_generator(
