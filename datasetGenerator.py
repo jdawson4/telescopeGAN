@@ -112,17 +112,21 @@ def rawDatasetGenerator():
             dataFound = False
             headerFound = False
             for i in range(3):
-                h = hdul[i]
+                try:
+                    h = hdul[i]
+                except:
+                    # sometimes might be out of range, just skip this
+                    # print("INDEXING ISSUE!")
+                    break
                 if h.header and not headerFound:
                     header = h.header
                     headerFound = True
                 if h.data is None:
                     continue
-                if len(h.data.shape) == 2:
+                if (len(h.data.shape) == 2) and not dataFound:
                     dataFound = True
                     data = h.data
-                    continue
-            if not dataFound:
+            if not (dataFound and headerFound):
                 print("DATA NOT FOUND AT", v)
                 continue
 
@@ -146,7 +150,11 @@ def rawDatasetGenerator():
             # we actually want the filter to store the wavelength, rather
             # than filter name. Luckily, we can convert easily with an object
             # defined in constants.py:
-            filter = filterDict[filter]
+            if filter in filterDict:
+                filter = filterDict[filter]
+            else:
+                print(f"FILTER {filter} NOT IN FILTERDICT!")
+                continue
 
             # let's also determine what we're looking at. Apparently targname
             # is standard across all telescopes (though I've only looked at
