@@ -9,12 +9,10 @@
 # already-existing images to the model.
 
 from astropy.io import fits
-
 import tensorflow as tf
 import numpy as np
 import os
 import gc
-import random
 import imageio
 
 from constants import *

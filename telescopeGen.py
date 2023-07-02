@@ -4,9 +4,6 @@
 import tensorflow as tf
 import numpy as np
 import imageio
-from astropy.io import fits
-from os import listdir
-from os.path import isfile, join
 from constants import *
 from datasetGenerator import *
 

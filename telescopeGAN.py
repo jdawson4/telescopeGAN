@@ -26,7 +26,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
 keras.mixed_precision.set_global_policy("mixed_float16")
-tf.random.set_seed(seed)
+tf.keras.utils.set_random_seed(seed)
 
 # these are declared in architecture.py
 generator = gen()
