@@ -250,6 +250,7 @@ datasets = (
     datasets.apply(tf.data.experimental.assert_cardinality(combinedCardinality))
     .batch(batch_size)
     .prefetch(batch_size * 4)
+    .shuffle(batch_size * 4, seed=seed, reshuffle_each_iteration=True)
 )
 
 if __name__ == "__main__":

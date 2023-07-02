@@ -18,7 +18,7 @@ checkPointImageDir = "checkpoint_images/"
 # custom hyperparameters--determine things about loss:
 chi = 0.75  # how much we care about SSIM vs L1 when creating content loss
 # ^ not sure if we're even going to use L2 after all.
-content_lambda = 0.375  # content loss weight
+content_lambda = 0.1  # content loss weight
 wgan_lambda = 1.0  # the weight we give to fooling the wgan
 
 # learning rates: a few different strategies:

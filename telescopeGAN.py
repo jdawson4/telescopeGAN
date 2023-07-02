@@ -180,6 +180,12 @@ class EveryKCallback(keras.callbacks.Callback):
         self.epoch_interval = epoch_interval
 
     def on_epoch_begin(self, epoch, logs=None):
+        # please note that the "raw" pngs aren't a great representation of
+        # what's in the data, because the "raw" images that the generator
+        # receives may have more than the 3 channels allowed by RGB. What gets
+        # printed is instead a reduced form; however, the "fake images" shown
+        # are the actual outputs, so they represent what the generator is
+        # learning.
         if (epoch % self.epoch_interval) == 0:
             random_selection = self.data.take(1)
             raw_images, _ = list(random_selection.as_numpy_iterator())[0]
@@ -187,7 +193,8 @@ class EveryKCallback(keras.callbacks.Callback):
             fake_image = self.model.generator(
                 tf.expand_dims(raw_image, 0), training=False
             )[0]
-            raw_image = raw_image.numpy().astype(np.uint8)
+            raw_image = raw_image.numpy().astype(np.uint8)[:, :, 0:3]
+            # ^ reduce to rgb, otherwise it'll be an RGBA formatted image
             fake_image = fake_image.numpy().astype(np.uint8)
             imageio.imwrite(
                 checkPointImageDir + str(epoch) + ".png", fake_image
