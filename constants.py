@@ -154,4 +154,7 @@ filterDict = {
     "F466N": 4.654 * 10000,
     "F470N": 4.707 * 10000,
     "F480M": 4.834 * 10000,
+    # TODO: add filters for WFPC1 and WFPC2! It appears a source is here:
+    # http://svo2.cab.inta-csic.es/svo/theory/fps3/index.php?mode=browse&gname=hst&gname2=WFPC1-PC&asttype=
+    # (unsure of accuracy)
 }
