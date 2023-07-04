@@ -164,7 +164,10 @@ def rawDatasetGenerator():
             if filter in filterDict:
                 filter = filterDict[filter]
             else:
-                print(f"FILTER {filter} NOT IN FILTERDICT!")
+                if "INSTRUME" in headerKeys:
+                    print(
+                        f"FILTER {filter} NOT IN FILTERDICT! INSTRUMENT: {header['INSTRUME']}"
+                    )
                 continue
 
             # let's also determine what we're looking at. Apparently targname
