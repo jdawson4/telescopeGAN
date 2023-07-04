@@ -66,21 +66,32 @@ def stackImgs(imgs):
     for k in imgs.keys():
         filters.append(k)
     filters = sorted(filters)
+    filtersToUse = []
     if len(filters) == 0:
         raise Exception("ERROR: No data to stack!")
-    while len(filters) < numLayers:
-        # in case we don't have enough images, pad with black tiles:
-        filters.append("blackSingleLayer")
-    filtersToUse = selectNEvenlySpaced(numLayers, filters)
+    elif len(filters) > numLayers:
+        j = 0
+        for _ in range(0, len(filters), numLayers):
+            filtersToUse.append(selectNEvenlySpaced(numLayers, filters[j:]))
+            j += 1
+    else:
+        while len(filters) < numLayers:
+            # in case we don't have enough images, pad with black tiles:
+            filters.append("blackSingleLayer")
+        filtersToUse.append(selectNEvenlySpaced(numLayers, filters))
 
     # layer and return:
-    layer = 0
+    rawDataList = []
     imgs["blackSingleLayer"] = blackSingleLayer
-    for f in filtersToUse:
-        rawData[:, :, layer] = imgs[f]
-        layer += 1
+    for setOfFilters in filtersToUse:
+        layer = 0
+        rawDataForExport = rawData
+        for f in setOfFilters:
+            rawDataForExport[:, :, layer] = imgs[f]
+            rawDataList.append(rawDataForExport)
+            layer += 1
     gc.collect()
-    return rawData
+    return rawDataList
 
 
 def cookieCut(fullImg):
@@ -175,24 +186,17 @@ def rawDatasetGenerator():
                 # we're going to process the previous target's data, then pass
                 # our new image into the dict.
                 rawData = stackImgs(imgs)
-
-                # and then there's actually another step, we need to make sure
-                # that the model only receives images of the same size.
-                cookieCutImages = cookieCut(rawData)
-                for cookieCutImg in cookieCutImages:
-                    yield cookieCutImg  # and finally we pass that img to the model!
+                for r in rawData:
+                    # and then there's actually another step, we need to make sure
+                    # that the model only receives images of the same size.
+                    cookieCutImages = cookieCut(r)
+                    for cookieCutImg in cookieCutImages:
+                        yield cookieCutImg  # and finally we pass that img to the model!
 
                 # next up: we add our data to the new list:
                 imgs = dict()
                 imgs[filter] = data
             gc.collect()
-
-    # we actually still have "one in the chamber" so to speak, so let's process
-    # that one and we're done!
-    # rawData = stackImgs(imgs)
-    # cookieCutImages = cookieCut(rawData)
-    # for cookieCutImg in cookieCutImages:
-    #    yield cookieCutImg
 
 
 # now that all of that nasty business is over, we also want to make a dataset
