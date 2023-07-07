@@ -13,7 +13,11 @@ import tensorflow as tf
 import numpy as np
 import os
 import gc
-import imageio
+from PIL import Image
+import imageio.v2 as imageio
+
+# this silences a warning for loading large files (which we do a lot!)
+Image.MAX_IMAGE_PIXELS = None
 
 from constants import *
 
@@ -164,10 +168,12 @@ def rawDatasetGenerator():
             if filter in filterDict:
                 filter = filterDict[filter]
             else:
+                """
                 if "INSTRUME" in headerKeys:
                     print(
                         f"FILTER {filter} NOT IN FILTERDICT! INSTRUMENT: {header['INSTRUME']}"
                     )
+                """
                 continue
 
             # let's also determine what we're looking at. Apparently targname
