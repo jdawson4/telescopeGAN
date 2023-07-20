@@ -18,45 +18,6 @@ from constants import *
 from architecture import *
 from datasetGenerator import *  # also imports the datasets themselves
 
-physical_devices = tf.config.experimental.list_physical_devices("GPU")
-num_gpus = len(physical_devices)
-# if len(physical_devices) > 0:
-#    tf.config.experimental.set_memory_growth(physical_devices[0], True)
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
-
-keras.mixed_precision.set_global_policy("mixed_float16")
-tf.keras.utils.set_random_seed(seed)
-
-# these are declared in architecture.py
-generator = gen()
-discriminator = dis()
-
-
-# let's print some useful info here
-print("\n")
-print("######################################################################")
-print("\n")
-print("Architecture:\n")
-print("\n")
-print("\n")
-print("Image size:", image_size)
-print("Dataset size:", combinedCardinality)
-print("Target images:", officialCardinality)
-print("Raw images:", rawCardinality)
-print("Batch size:", batch_size)
-print("Weight of content loss:", content_lambda)
-print("Weight of WGAN loss:", wgan_lambda)
-print("Value of hyperparameter chi:", chi)
-print("g learning rate", gen_learn_rate)
-print("d learning rate", dis_learn_rate)
-print("Intended number of epochs:", epochs)
-print("Number of GPUs we're running on:", num_gpus)
-print("\n")
-print("######################################################################")
-print("\n")
-
-
 def content_loss(fake, real):
     f = tf.cast(fake, tf.float32)
     r = tf.cast(real, tf.float32)
@@ -100,9 +61,9 @@ class ConditionalGAN(keras.Model):
 
         # training here:
         with tf.GradientTape() as gtape, tf.GradientTape() as dtape:
-            gen_output = generator(raw_img_batch, training=True)
-            disc_real_output = discriminator(user_img_batch, training=True)
-            disc_generated_output = discriminator(gen_output, training=True)
+            gen_output = self.generator(raw_img_batch, training=True)
+            disc_real_output = self.discriminator(user_img_batch, training=True)
+            disc_generated_output = self.discriminator(gen_output, training=True)
             wganLoss = -self.g_loss_fn(fake_image_labels, disc_generated_output)
             wganLoss = (
                 tf.convert_to_tensor(wgan_lambda, dtype=tf.float16) * wganLoss
@@ -147,82 +108,126 @@ class ConditionalGAN(keras.Model):
             "content_loss": contentLoss,
         }
 
+# our main function, wrapping in case we want to execute it somewhere other
+# than in this file's __main__
+def trainModel():
+    # set some global variables:
+    physical_devices = tf.config.experimental.list_physical_devices("GPU")
+    num_gpus = len(physical_devices)
+    # if len(physical_devices) > 0:
+    #    tf.config.experimental.set_memory_growth(physical_devices[0], True)
+    os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+    tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
-# okay... let's try to use this thing:
-cond_gan = ConditionalGAN(discriminator=discriminator, generator=generator)
+    keras.mixed_precision.set_global_policy("mixed_float16")
+    tf.keras.utils.set_random_seed(seed)
 
+    # get our models.
+    # these are declared in architecture.py
+    generator = gen()
+    discriminator = dis()
 
-def wasserstein_loss(y_true, y_pred):
-    return tf.keras.backend.mean(y_true * y_pred)
+    # let's print some useful info here
+    print("\n")
+    print("######################################################################")
+    print("\n")
+    print("Architecture:\n")
+    print("\n")
+    print("\n")
+    print("Image size:", image_size)
+    print("Dataset size:", combinedCardinality)
+    print("Target images:", officialCardinality)
+    print("Raw images:", rawCardinality)
+    print("Batch size:", batch_size)
+    print("Weight of content loss:", content_lambda)
+    print("Weight of WGAN loss:", wgan_lambda)
+    print("Value of hyperparameter chi:", chi)
+    print("g learning rate", gen_learn_rate)
+    print("d learning rate", dis_learn_rate)
+    print("Intended number of epochs:", epochs)
+    print("Number of GPUs we're running on:", num_gpus)
+    print("\n")
+    print("######################################################################")
+    print("\n")
 
-
-cond_gan.compile(
-    # d_optimizer = tf.keras.optimizers.RMSprop(learning_rate = dis_learn_rate),
-    # g_optimizer = tf.keras.optimizers.RMSprop(learning_rate = gen_learn_rate),
-    d_optimizer=tf.keras.optimizers.Adam(
-        learning_rate=dis_learn_rate, beta_1=momentum
-    ),
-    g_optimizer=tf.keras.optimizers.Adam(
-        learning_rate=gen_learn_rate, beta_1=momentum
-    ),
-    d_loss_fn=wasserstein_loss,
-    g_loss_fn=wasserstein_loss,
-    run_eagerly=True,
-)
-
-# only uncomment this code if you have a prepared checkpoint to use for output:
-# cond_gan.built=True
-# cond_gan.load_weights("ckpts/ckpt60")
-# print("Checkpoint loaded, skipping training.")
-
-
-class EveryKCallback(keras.callbacks.Callback):
-    def __init__(self, data, epoch_interval=5):
-        self.data = data
-        self.epoch_interval = epoch_interval
-
-    def on_epoch_begin(self, epoch, logs=None):
-        # please note that the "raw" pngs aren't a great representation of
-        # what's in the data, because the "raw" images that the generator
-        # receives may have more than the 3 channels allowed by RGB. What gets
-        # printed is instead a reduced form; however, the "fake images" shown
-        # are the actual outputs, so they represent what the generator is
-        # learning.
-        if (epoch % self.epoch_interval) == 0:
-            random_selection = self.data.take(1)
-            raw_images, _ = list(random_selection.as_numpy_iterator())[0]
-            raw_image = tf.convert_to_tensor(raw_images[0], dtype=tf.float32)
-            fake_image = self.model.generator(
-                tf.expand_dims(raw_image, 0), training=False
-            )[0]
-            raw_image = raw_image.numpy().astype(np.uint8)[:, :, 0:3]
-            # ^ reduce to rgb, otherwise it'll be an RGBA formatted image
-            fake_image = fake_image.numpy().astype(np.uint8)
-            imageio.imwrite(
-                checkPointImageDir + str(epoch) + ".png", fake_image
-            )
-            imageio.imwrite(
-                checkPointImageDir + str(epoch) + "raw.png", raw_image
-            )
-
-            self.model.save_weights(
-                "ckpts/ckpt" + str(epoch), overwrite=True, save_format="h5"
-            )
-            self.model.generator.save("telescopeGen", overwrite=True)
+    # okay... let's try to use this thing:
+    cond_gan = ConditionalGAN(discriminator=discriminator, generator=generator)
 
 
-cond_gan.fit(
-    datasets,
-    # data is already batched!
-    epochs=epochs,
-    verbose=1,
-    callbacks=[
-        EveryKCallback(datasets, epoch_interval=5)
-    ],  # custom callbacks here!
-    # validation doesnt really apply here?
-    shuffle=False,  # shuffling done via dataset api
-)
+    def wasserstein_loss(y_true, y_pred):
+        return tf.keras.backend.mean(y_true * y_pred)
 
-cond_gan.save_weights("ckpts/finished", overwrite=True, save_format="h5")
-cond_gan.generator.save("telescopeGen", overwrite=True)
-# for good measure, save again once we're done training
+
+    cond_gan.compile(
+        # d_optimizer = tf.keras.optimizers.RMSprop(learning_rate = dis_learn_rate),
+        # g_optimizer = tf.keras.optimizers.RMSprop(learning_rate = gen_learn_rate),
+        d_optimizer=tf.keras.optimizers.Adam(
+            learning_rate=dis_learn_rate, beta_1=momentum
+        ),
+        g_optimizer=tf.keras.optimizers.Adam(
+            learning_rate=gen_learn_rate, beta_1=momentum
+        ),
+        d_loss_fn=wasserstein_loss,
+        g_loss_fn=wasserstein_loss,
+        run_eagerly=True,
+    )
+
+    # only uncomment this code if you have a prepared checkpoint to use for output:
+    # cond_gan.built=True
+    # cond_gan.load_weights("ckpts/ckpt60")
+    # print("Checkpoint loaded, skipping training.")
+
+
+    class EveryKCallback(keras.callbacks.Callback):
+        def __init__(self, data, epoch_interval=5):
+            self.data = data
+            self.epoch_interval = epoch_interval
+
+        def on_epoch_begin(self, epoch, logs=None):
+            # please note that the "raw" pngs aren't a great representation of
+            # what's in the data, because the "raw" images that the generator
+            # receives may have more than the 3 channels allowed by RGB. What gets
+            # printed is instead a reduced form; however, the "fake images" shown
+            # are the actual outputs, so they represent what the generator is
+            # learning.
+            if (epoch % self.epoch_interval) == 0:
+                random_selection = self.data.take(1)
+                raw_images, _ = list(random_selection.as_numpy_iterator())[0]
+                raw_image = tf.convert_to_tensor(raw_images[0], dtype=tf.float32)
+                fake_image = self.model.generator(
+                    tf.expand_dims(raw_image, 0), training=False
+                )[0]
+                raw_image = raw_image.numpy().astype(np.uint8)[:, :, 0:3]
+                # ^ reduce to rgb, otherwise it'll be an RGBA formatted image
+                fake_image = fake_image.numpy().astype(np.uint8)
+                imageio.imwrite(
+                    checkPointImageDir + str(epoch) + ".png", fake_image
+                )
+                imageio.imwrite(
+                    checkPointImageDir + str(epoch) + "raw.png", raw_image
+                )
+
+                self.model.save_weights(
+                    "ckpts/ckpt" + str(epoch), overwrite=True, save_format="h5"
+                )
+                self.model.generator.save("telescopeGen", overwrite=True)
+
+
+    cond_gan.fit(
+        datasets,
+        # data is already batched!
+        epochs=epochs,
+        verbose=1,
+        callbacks=[
+            EveryKCallback(datasets, epoch_interval=5)
+        ],  # custom callbacks here!
+        # validation doesnt really apply here?
+        shuffle=False,  # shuffling done via dataset api
+    )
+
+    cond_gan.save_weights("ckpts/finished", overwrite=True, save_format="h5")
+    cond_gan.generator.save("telescopeGen", overwrite=True)
+    # for good measure, save again once we're done training
+
+if __name__ == "__main__":
+    trainModel()
