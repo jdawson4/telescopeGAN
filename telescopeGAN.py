@@ -18,6 +18,7 @@ from constants import *
 from architecture import *
 from datasetGenerator import *  # also imports the datasets themselves
 
+
 def content_loss(fake, real):
     f = tf.cast(fake, tf.float32)
     r = tf.cast(real, tf.float32)
@@ -63,7 +64,9 @@ class ConditionalGAN(keras.Model):
         with tf.GradientTape() as gtape, tf.GradientTape() as dtape:
             gen_output = self.generator(raw_img_batch, training=True)
             disc_real_output = self.discriminator(user_img_batch, training=True)
-            disc_generated_output = self.discriminator(gen_output, training=True)
+            disc_generated_output = self.discriminator(
+                gen_output, training=True
+            )
             wganLoss = -self.g_loss_fn(fake_image_labels, disc_generated_output)
             wganLoss = (
                 tf.convert_to_tensor(wgan_lambda, dtype=tf.float16) * wganLoss
@@ -108,6 +111,7 @@ class ConditionalGAN(keras.Model):
             "content_loss": contentLoss,
         }
 
+
 # our main function, wrapping in case we want to execute it somewhere other
 # than in this file's __main__
 def trainModel():
@@ -129,7 +133,9 @@ def trainModel():
 
     # let's print some useful info here
     print("\n")
-    print("######################################################################")
+    print(
+        "######################################################################"
+    )
     print("\n")
     print("Architecture:\n")
     print("\n")
@@ -147,16 +153,16 @@ def trainModel():
     print("Intended number of epochs:", epochs)
     print("Number of GPUs we're running on:", num_gpus)
     print("\n")
-    print("######################################################################")
+    print(
+        "######################################################################"
+    )
     print("\n")
 
     # okay... let's try to use this thing:
     cond_gan = ConditionalGAN(discriminator=discriminator, generator=generator)
 
-
     def wasserstein_loss(y_true, y_pred):
         return tf.keras.backend.mean(y_true * y_pred)
-
 
     cond_gan.compile(
         # d_optimizer = tf.keras.optimizers.RMSprop(learning_rate = dis_learn_rate),
@@ -177,7 +183,6 @@ def trainModel():
     # cond_gan.load_weights("ckpts/ckpt60")
     # print("Checkpoint loaded, skipping training.")
 
-
     class EveryKCallback(keras.callbacks.Callback):
         def __init__(self, data, epoch_interval=5):
             self.data = data
@@ -193,7 +198,9 @@ def trainModel():
             if (epoch % self.epoch_interval) == 0:
                 random_selection = self.data.take(1)
                 raw_images, _ = list(random_selection.as_numpy_iterator())[0]
-                raw_image = tf.convert_to_tensor(raw_images[0], dtype=tf.float32)
+                raw_image = tf.convert_to_tensor(
+                    raw_images[0], dtype=tf.float32
+                )
                 fake_image = self.model.generator(
                     tf.expand_dims(raw_image, 0), training=False
                 )[0]
@@ -212,7 +219,6 @@ def trainModel():
                 )
                 self.model.generator.save("telescopeGen", overwrite=True)
 
-
     cond_gan.fit(
         datasets,
         # data is already batched!
@@ -228,6 +234,7 @@ def trainModel():
     cond_gan.save_weights("ckpts/finished", overwrite=True, save_format="h5")
     cond_gan.generator.save("telescopeGen", overwrite=True)
     # for good measure, save again once we're done training
+
 
 if __name__ == "__main__":
     trainModel()
