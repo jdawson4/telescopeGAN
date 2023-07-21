@@ -1,5 +1,9 @@
 # Author: Jacob Dawson
-# just a simple script for generating images using the trained GAN.
+#
+# Just a simple script for generating images using the trained GAN.
+# In particular, we'll use the "generator" network in order to generate data
+# products, because the discriminator was just designed as a competitor in
+# training. The generator is the really useful network.
 
 import tensorflow as tf
 import numpy as np
@@ -19,11 +23,15 @@ def determine_padding(image):
     return i, j
 
 
-trained_gen = tf.keras.models.load_model("telescopeGen")
-imgCount = 0
-for rawImg in rawDataset.as_numpy_iterator():
-    imgCount += 1
-    raw_image = tf.convert_to_tensor(rawImg, dtype=tf.float32)
-    fake_image = trained_gen(tf.expand_dims(raw_image, 0), training=False)[0]
-    fake_image = fake_image.numpy().astype(np.uint8)
-    imageio.imwrite(fakeImageDir + str(imgCount) + ".png", fake_image)
+def generateImages():
+    trained_gen = tf.keras.models.load_model("telescopeGen")
+    imgCount = 0
+    for rawImg in rawDataset.as_numpy_iterator():
+        imgCount += 1
+        raw_image = tf.convert_to_tensor(rawImg, dtype=tf.float32)
+        fake_image = trained_gen(tf.expand_dims(raw_image, 0), training=False)[0]
+        fake_image = fake_image.numpy().astype(np.uint8)
+        imageio.imwrite(fakeImageDir + str(imgCount) + ".png", fake_image)
+
+if __name__ == "__main__":
+    generateImages()

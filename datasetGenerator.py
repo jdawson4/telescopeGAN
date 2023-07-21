@@ -7,6 +7,13 @@
 # contend with from multiple different sources (Webb, Hubble, etc). For the
 # target data, things will be simpler; we'll just be passing some
 # already-existing images to the model.
+#
+# For both raw and prepared data, we might also "cookiecut" them down to size;
+# by this I mean that a 800x800 image will get cut into 4 400x400 images
+# before being passed to the model. This is so that the model receives the full
+# resolution of the data, while also not being overloaded by too large of
+# images (there's a real risk of running out of RAM space, for instance, if
+# your images are too large)
 
 from astropy.io import fits
 import tensorflow as tf

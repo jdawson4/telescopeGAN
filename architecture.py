@@ -1,7 +1,10 @@
 # Author: Jacob Dawson
 #
 # This file is just for creating the two networks (the generator and the
-# discriminator).
+# discriminator). These two networks are then pitted against one another to
+# compete in an "evolutionary arms race", ultimately benefiting both.
+# That's all handled elsewhere, this file just specifies the architecture.
+
 from tensorflow import keras
 import tensorflow as tf
 from constants import *

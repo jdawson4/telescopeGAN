@@ -4,7 +4,7 @@
 # model here. I want to note that most of the work in this repo is a copy of
 # the work I've done on the JunoGAN project, another repo doing a similar thing
 # to images by NASA's Juno spacecraft. Here, we'll be training a GAN to
-# colorize/edit JWST images to make them nice and pretty!
+# colorize/edit JWST (and more?) images to make them nice and pretty!
 
 # IMPORTS
 import os
